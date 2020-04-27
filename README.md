@@ -1,4 +1,4 @@
 # VolatilityPredictor
-By using historic stock price volatility and Monte Carlo Simulations to predict future price trends of a stock.
+Using historic price volatility data to drive a Monte Carlo Simulation. Predicting future price trends based on distribution of daily stock price changes. 
 
 
