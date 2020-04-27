@@ -181,7 +181,7 @@ plt.tight_layout()
 plt.savefig('Log_Distribution_Plots.png',dpi=600)
 
 # --------------------------------------------------------------------------------------------
-'''
+
 
 # ---------- MONTE CARLO SIMULATION --------------------------------
 runs=1000
@@ -250,7 +250,7 @@ axs[1].axvline(sum(results[1])/len(results[1]),0,1,color='green',linestyle='--')
 
 plt.tight_layout()
 plt.savefig('EndPriceData_'+str(runs)+'.png',dpi=600)
-'''
+
 
 # ------------------------
 finish = datetime.datetime.now()
