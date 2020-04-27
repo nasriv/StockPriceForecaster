@@ -28,8 +28,8 @@ def hist_plot(data, name, axis,color):
 
 def hist_plot_norm(data, name, axis,color):
     sns.distplot(data,
-                 kde=True,
-                 hist=False,
+                 kde=False,
+                 hist=True,
                  fit=scipy.stats.norm,
                  label=str(name),
                  ax=axis,
@@ -38,8 +38,8 @@ def hist_plot_norm(data, name, axis,color):
 
 def hist_plot_laplace(data, name, axis,color):
     sns.distplot(data,
-                 kde=True,
-                 hist=False,
+                 kde=False,
+                 hist=True,
                  fit=scipy.stats.laplace,
                  label=str(name),
                  ax=axis,
@@ -48,8 +48,8 @@ def hist_plot_laplace(data, name, axis,color):
 
 def hist_plot_uniform(data, name, axis,color):
     sns.distplot(data,
-                 kde=True,
-                 hist=False,
+                 kde=False,
+                 hist=True,
                  fit=scipy.stats.uniform,
                  label=str(name),
                  ax=axis,
@@ -99,14 +99,12 @@ for ax in axs.reshape(-1):
             fontsize=9,
             transform=ax.transAxes,
             color=colors[i])
-    ax.set_xlabel('')
-    ax.set_ylabel('Frequency',fontsize=8)
+    ax.set_xlabel('Daily Percent Return')
     #ax.set(yscale='log')
     i+=1
 
 plt.tight_layout()
-#plt.suptitle("% Daily Change Distribution")
-#fig('Daily_Dist.png',dpi=300)
+plt.savefig('Daily%Dist.png', dpi=600)
 
 #----- Random distributions -----------------------------
 
@@ -150,7 +148,7 @@ for row in range(len(dfs)):
             if row == 0:
                 axs[row,col].set_title('Uniform Distribution')
 
-        axs[row,col].set_ylabel('Frequency', fontsize=8)
+        axs[row,col].set_ylabel('Prob. Density', fontsize=10)
         axs[row,col].set_xlabel('')
         axs[row,col].get_legend().remove()
         #axs[row,col].set(yscale='log')
@@ -174,7 +172,7 @@ for row in range(len(dfs)):
             if row == 0:
                 axs[row,col].set_title('Laplace Distribution')
 
-        axs[row,col].set_ylabel('Frequency', fontsize=8)
+        axs[row,col].set_ylabel('Prob. Density', fontsize=10)
         axs[row,col].set_xlabel('')
         axs[row,col].set(yscale='log')
         axs[row,col].get_legend().remove()
@@ -183,12 +181,14 @@ plt.tight_layout()
 plt.savefig('Log_Distribution_Plots.png',dpi=600)
 
 # --------------------------------------------------------------------------------------------
-
+'''
 
 # ---------- MONTE CARLO SIMULATION --------------------------------
 runs=1000
 days=90
 
+# ---- track final price for each stock ---
+results = []
 f, axs = plt.subplots(nrows=len(dfs),ncols=1,figsize=((len(dfs)+1)*8/3,8))
 
 for i in range(len(dfs)):
@@ -198,6 +198,9 @@ for i in range(len(dfs)):
 
     df1 = dfs[i][dfs[i].Date >= pd.to_datetime('4/1/2019')]
     sns.lineplot(df1.Date, df1.Open, ax=axs[i],color=colors[i],label=names[i])
+
+
+    result_temp = []
 
     for run in range(runs):
         temp = dfs[i]
@@ -215,14 +218,41 @@ for i in range(len(dfs)):
         sns.lineplot(df2.Date,df2.Open,ax=axs[i],alpha=0.5,color=colors[i])
         axs[i].set_xlabel("")
 
+        result_temp.append(float(df2.tail(1).Open.values))
+
+    results.append(result_temp)
+
     for line in axs[i].lines[1:]:
         line.set_linestyle("--")
         line.set_linewidth(0.5)
+
+    axs[i].set_ylabel('Share Price ($)')
 
 plt.tight_layout()
 plt.legend()
 plt.savefig('future_'+str(runs)+'.png',dpi=600)
 
+
+# ---- plot end price results ----
+f, axs = plt.subplots(2, 1, figsize=(12,8))
+i=0
+for ax in axs.reshape(-1):
+    sns.distplot(results[i],hist=True,kde=True,ax=ax,label=names[i],color=colors[i])
+    ax.legend(loc="best")
+    ax.set_xlabel('Share Price ($)')
+    ax.set_ylabel('Probability Density', fontsize=10)
+    i+=1
+
+axs[0].axvline(287,0,1,color='r',linestyle='--')
+axs[0].axvline(sum(results[0])/len(results[0]),0,1,color='b',linestyle='--')
+axs[1].axvline(56.63,0,1,color='r',linestyle='--')
+axs[1].axvline(sum(results[1])/len(results[1]),0,1,color='green',linestyle='--')
+
+plt.tight_layout()
+plt.savefig('EndPriceData_'+str(runs)+'.png',dpi=600)
+'''
+
+# ------------------------
 finish = datetime.datetime.now()
 print(finish-start)
 print(f'Completed in: {finish-start} sec.')
