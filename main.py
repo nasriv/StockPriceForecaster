@@ -78,34 +78,43 @@ colors = ['b','green','r','orange']
 
 # -------- HISTOGRAM PERCENT DISTRIBUTION PLOT-------------
 sns.set(color_codes=True)
-f, axs = plt.subplots(nrows=len(dfs),ncols=1,figsize=(8,(len(dfs)+1)*8/3))
+
+f, axs = plt.subplots(nrows=1,ncols=1,figsize=(8,(len(dfs)+1)*8/3))
 
 i=0
-for ax in axs.reshape(-1):
-    hist_plot(dfs[i].PctChg,names[i],ax,colors[i])
-    ax.legend(loc="upper left")
+for i in range(len(dfs)):
+    sns.distplot(dfs[i].PctChg,kde=True,label=names[i],ax=axs,color=colors[i])
+    axs.legend(loc="upper left")
     mean = dfs[i].PctChg.mean()
     std = dfs[i].PctChg.std()
     max = dfs[i].PctChg.max()
     min = dfs[i].PctChg.min()
-    ax.text(0.99,
-            0.95,
+    if i == 0:
+        xloc = 0.99
+        yloc = 0.95
+        halign='right'
+    else:
+        xloc = 0.99
+        yloc = 0.75
+        halign='right'
+    axs.text(xloc,
+            yloc,
             r'$\mu$ = '+str(mean)[0:6]+
             '%\n$\sigma$ = '+str(std)[0:4]+'%'+
             '\nmax = '+str(max)[0:6]+'%'+
             '\nmin = '+str(min)[0:6]+'%',
-            ha='right',
+            ha=halign,
             va='top',
             fontsize=9,
-            transform=ax.transAxes,
+            transform=axs.transAxes,
             color=colors[i])
-    ax.set_xlabel('Daily Percent Return')
+    axs.set_xlabel('Daily Percent Return')
+    axs.set_ylabel('Probability Density')
     #ax.set(yscale='log')
     i+=1
 
 plt.tight_layout()
 plt.savefig('Daily%Dist.png', dpi=600)
-
 #----- Random distributions -----------------------------
 
 norm_val=[None]*(len(dfs)+1) # initialize list to number of stocks
@@ -133,52 +142,40 @@ f, axs = plt.subplots(nrows=len(dfs),ncols=3,figsize=(12,(len(dfs)+1)*8/3))
 for row in range(len(dfs)):
     for col in range(3):
         if col == 0:
-            hist_plot(dfs[row].PctChg, names[row], axs[row,col], colors[row])
-            hist_plot(norm_val[row],names[row], axs[row,col],'r')
+            res = scipy.stats.probplot(dfs[row].PctChg,dist='norm',fit=True,plot=axs[row][col])
+            (slope, intercept, r) = res[1]
             if row == 0:
                 axs[row,col].set_title('Normal Distribution')
+                axs[row, col].get_lines()[0].set_markerfacecolor('b')
+            else:
+                axs[row,col].set_title('')
+                axs[row, col].get_lines()[0].set_markerfacecolor('green')
         if col == 1:
-            hist_plot(dfs[row].PctChg, names[row], axs[row,col], colors[row])
-            hist_plot(laplace_val[row],names[row], axs[row,col],'r')
+            res = scipy.stats.probplot(dfs[row].PctChg,dist='laplace',fit=True,plot=axs[row][col])
+            (slope, intercept, r) = res[1]
             if row == 0:
                 axs[row,col].set_title('Laplace Distribution')
+            else:
+                axs[row,col].set_title('')
         if col == 2:
-            hist_plot(dfs[row].PctChg, names[row], axs[row,col], colors[row])
-            hist_plot(uniform_val[row],names[row], axs[row,col],'r')
+            res = scipy.stats.probplot(dfs[row].PctChg,dist='uniform',fit=True,plot=axs[row][col])
+            (slope, intercept, r) = res[1]
             if row == 0:
                 axs[row,col].set_title('Uniform Distribution')
+            else:
+                axs[row,col].set_title('')
 
-        axs[row,col].set_ylabel('Prob. Density', fontsize=10)
         axs[row,col].set_xlabel('')
-        axs[row,col].get_legend().remove()
-        #axs[row,col].set(yscale='log')
+        axs[row,col].set_ylabel('')
+        axs[row,col].get_lines()[0].set_markersize(1.0)
+        axs[row,col].text(0.05, 0.85,
+                          str(names[row])+'\n'+r'$r^{2} =$' + str(r ** 2)[0:5],
+                          transform=axs[row,col].transAxes,
+                          size=10,
+                          bbox=dict(fc='white',alpha=0.6))
 
 plt.tight_layout()
-plt.savefig('Distribution_Plots.png',dpi=600)
-
-# plot Normal and Laplace distribution plots in log space
-sns.set(color_codes=True)
-f, axs = plt.subplots(nrows=len(dfs),ncols=2,figsize=(12,(len(dfs)+1)*8/3))
-for row in range(len(dfs)):
-    for col in range(2):
-        if col == 0:
-            hist_plot(dfs[row].PctChg, names[row], axs[row,col], colors[row])
-            hist_plot(norm_val[row],names[row], axs[row,col],'r')
-            if row == 0:
-                axs[row,col].set_title('Normal Distribution')
-        if col == 1:
-            hist_plot(dfs[row].PctChg, names[row], axs[row,col], colors[row])
-            hist_plot(laplace_val[row],names[row], axs[row,col],'r')
-            if row == 0:
-                axs[row,col].set_title('Laplace Distribution')
-
-        axs[row,col].set_ylabel('Prob. Density', fontsize=10)
-        axs[row,col].set_xlabel('')
-        axs[row,col].set(yscale='log')
-        axs[row,col].get_legend().remove()
-
-plt.tight_layout()
-plt.savefig('Log_Distribution_Plots.png',dpi=600)
+plt.savefig('QQ_Plots.png',dpi=600)
 
 # --------------------------------------------------------------------------------------------
 
@@ -257,4 +254,4 @@ finish = datetime.datetime.now()
 print(finish-start)
 print(f'Completed in: {finish-start} sec.')
 
-#plt.show()
+plt.show()
