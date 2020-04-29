@@ -108,12 +108,13 @@ for i in range(len(dfs)):
             fontsize=9,
             transform=axs.transAxes,
             color=colors[i])
-    axs.set_xlabel('Daily Percent Return')
+    axs.set_xlabel('% Change')
     axs.set_ylabel('Probability Density')
     #ax.set(yscale='log')
     i+=1
 
 plt.tight_layout()
+plt.title('Daily % Return Probability Distribution of AMD and SPY')
 plt.savefig('Daily%Dist.png', dpi=600)
 #----- Random distributions -----------------------------
 
@@ -144,6 +145,12 @@ for row in range(len(dfs)):
         if col == 0:
             res = scipy.stats.probplot(dfs[row].PctChg,dist='norm',fit=True,plot=axs[row][col])
             (slope, intercept, r) = res[1]
+            axs[row, col].text(0.85, 0.15,
+                               'Good Fit',
+                               transform=axs[row, col].transAxes,
+                               size=10,
+                               ha='right',
+                               bbox=dict(fc='white', alpha=0.6))
             if row == 0:
                 axs[row,col].set_title('Normal Distribution')
                 axs[row, col].get_lines()[0].set_markerfacecolor('b')
@@ -153,6 +160,12 @@ for row in range(len(dfs)):
         if col == 1:
             res = scipy.stats.probplot(dfs[row].PctChg,dist='laplace',fit=True,plot=axs[row][col])
             (slope, intercept, r) = res[1]
+            axs[row, col].text(0.85, 0.15,
+                               'Best Fit',
+                               transform=axs[row, col].transAxes,
+                               size=10,
+                               ha='right',
+                               bbox=dict(fc='white', alpha=0.6))
             if row == 0:
                 axs[row,col].set_title('Laplace Distribution')
             else:
@@ -160,6 +173,12 @@ for row in range(len(dfs)):
         if col == 2:
             res = scipy.stats.probplot(dfs[row].PctChg,dist='uniform',fit=True,plot=axs[row][col])
             (slope, intercept, r) = res[1]
+            axs[row, col].text(0.85, 0.15,
+                               'Poor Fit',
+                               transform=axs[row, col].transAxes,
+                               size=10,
+                               ha='right',
+                               bbox=dict(fc='white', alpha=0.6))
             if row == 0:
                 axs[row,col].set_title('Uniform Distribution')
             else:
@@ -173,6 +192,7 @@ for row in range(len(dfs)):
                           transform=axs[row,col].transAxes,
                           size=10,
                           bbox=dict(fc='white',alpha=0.6))
+
 
 plt.tight_layout()
 plt.savefig('QQ_Plots.png',dpi=600)
@@ -232,6 +252,12 @@ plt.savefig('future_'+str(runs)+'.png',dpi=600)
 
 # ---- plot end price results ----
 f, axs = plt.subplots(2, 1, figsize=(12,8))
+
+axs[0].axvline(287,0,1,color='r',linestyle='--',label='Current Share Price')
+#axs[0].axvline(sum(results[0])/len(results[0]),0,1,color='b',linestyle='--',label='Result Average')
+axs[1].axvline(56.63,0,1,color='r',linestyle='--',label='Current Share Price')
+#axs[1].axvline(sum(results[1])/len(results[1]),0,1,color='green',linestyle='--',label='Result Average')
+
 i=0
 for ax in axs.reshape(-1):
     sns.distplot(results[i],hist=True,kde=True,ax=ax,label=names[i],color=colors[i])
@@ -240,18 +266,12 @@ for ax in axs.reshape(-1):
     ax.set_ylabel('Probability Density', fontsize=10)
     i+=1
 
-axs[0].axvline(287,0,1,color='r',linestyle='--')
-axs[0].axvline(sum(results[0])/len(results[0]),0,1,color='b',linestyle='--')
-axs[1].axvline(56.63,0,1,color='r',linestyle='--')
-axs[1].axvline(sum(results[1])/len(results[1]),0,1,color='green',linestyle='--')
-
 plt.tight_layout()
 plt.savefig('EndPriceData_'+str(runs)+'.png',dpi=600)
-
 
 # ------------------------
 finish = datetime.datetime.now()
 print(finish-start)
 print(f'Completed in: {finish-start} sec.')
 
-plt.show()
+#plt.show()
